@@ -1,6 +1,7 @@
 shinyServer(function(input, output, session){
-
-    data = reactive({ # Check if species selection changes
+    
+    # Check if species selection changes
+    current_data = reactive({
       if(input$species == 'American Bittern'){ # Check which species
         if(is.null(american_bittern)){ # Has the dataframe been loaded from csv yet?
           american_bittern = read.csv('./data/american_bittern.csv', stringsAsFactors = FALSE) # If not, load data
@@ -70,9 +71,11 @@ shinyServer(function(input, output, session){
         }
         return(spotted_sandpiper)
       }
+      
     })
     
-    image_src = reactive({ # Changes the image source to display different images depending on input$species
+    # Changes the image source to display different images depending on input$species
+    image_src = reactive({ 
       if(input$species == 'American Bittern'){ # Check which species
         return('american_bittern.jpg') # return species specific image source
       }
@@ -114,13 +117,27 @@ shinyServer(function(input, output, session){
       }
     })
     
+    # If breed checkbox is checked, uncheck when selecting a different species
+    observeEvent(input$species, {
+      if(input$breed){
+        updateCheckboxInput(session, "breed", value = FALSE)
+      }
+    })
+    
+    # Text for play button help explanation and data/images sources
+    output$menu_text = renderUI({
+      HTML('<br>Move both slider endpoints to January (1) and press \
+      "play" to show an animated series of monthly bird sightings for 2016.<br/>\
+      <br>Image source: Audobon Guide to North American Birds website. Observation data from the 2017 \
+      eBird Basic Dataset. Breeding season range estimates from The Cornell Lab of Ornithology Birds \
+      of North America website.<br/>')})
+    
     # render ggplot of observation data
     output$map = renderPlot({
-      # Plot the ggplot map
-      ggplot(to_mapdata(filter(data(), month(date) == input$month)), aes(x=long, y=lat, group=group)) +
-        scale_fill_continuous(high = "#003666", low = "#cee8ff") +
+      ggplot(to_mapdata(filter_months(current_data(), input$month)), aes(x=long, y=lat, group=group)) +
+        scale_fill_continuous(high = "#003666", low = "#cee8ff", name = "log(Observations)") +
         geom_polygon(aes(fill = legend)) + coord_map() +
-        labs(title=paste(input$species, 'Range in', month.name[input$month]),x="",y="") + theme_void() +
+        labs(title = paste(input$species, 'Sightings by County', title_months(input$month)), x = "", y = "") + theme_void() +
         theme(legend.position="bottom") +
         theme(plot.title = element_text(hjust = 0.5))
     })
@@ -132,17 +149,34 @@ shinyServer(function(input, output, session){
           style ="display: block; margin-left: auto; margin-right: auto;")
     })
     
-    # show data using DataTable
-    output$table = DT::renderDataTable({
-        datatable(to_mapdata(filter(data(), month(date) == input$month), choice=2), rownames=FALSE)
+    # show county observations data as table
+    output$county_table = DT::renderDataTable({
+        datatable(to_mapdata(filter_months(current_data(), input$month), choice=2), rownames=FALSE)
+    })
+    
+    # show time observations data as table
+    output$time_table = DT::renderDataTable({
+      datatable(to_histdata(filter_months(current_data(), input$month), choice=2), rownames=FALSE)
     })
     
     output$hist = renderPlot({
       # plot the histogram
-      ggplot(to_histdata(filter(data(), month(date) == input$month)), aes(x = time)) +
-      geom_histogram(aes(y=value), stat = 'identity', binwidth = 100) +
-      scale_x_discrete(breaks=time_seq, labels=time_seq) + labs(x='Time', y='Observations') +
-      ggtitle(paste('Optimal Viewing Times for', input$species, 'in', month.name[input$month])) +
-      theme_economist()
+      suppressWarnings( # ignore warning messages about unknown parameters (binwidth, bins, pad) because x-axis is categorical and not continuous
+        ggplot(to_histdata(filter_months(current_data(), input$month)), aes(x = time)) +
+        geom_histogram(aes(y = value), stat = 'identity') +
+        scale_x_discrete(breaks = time_seq, labels = time_seq) + labs(x = 'Time', y = 'Observations') +
+        ggtitle(paste('Optimal Viewing Times for', input$species, title_months(input$month))) +
+        theme_economist()
+      )
+    })
+    
+    # If checkbox input is checked, set month range equal to the breeding season estimate for the selected species
+    observeEvent(input$breed,{
+      if (input$breed){
+        updateNumericInput(session, "month", value = breed_range(input$species))
+      }
+      else{
+        updateNumericInput(session, "month", value = c(1,12))
+      }
     })
 })

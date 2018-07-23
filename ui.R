@@ -8,17 +8,19 @@ shinyUI(dashboardPage(
             menuItem("Data Table", tabName = "data", icon = icon("database"))
         ),
         selectizeInput("species",
-                       "Select species to inspect:",
-                       species, selected = 'American Bittern'),
+                       "Select bird species:",
+                       species_list, selected = 'American Bittern'),
+        checkboxInput("breed", "Show breeding season only", value = FALSE),
         sliderInput(inputId = "month",
-                    label = "Month Range",
+                    label = "Select month range:",
                     min = 01,
                     max = 12,
-                    value = 1,
+                    value = c(1, 12),
                     round = TRUE,
                     sep = '',
                     animate = animationOptions(interval = 2000,
-                                               playButton = HTML("<h4>Play</h4>")))
+                                               playButton = HTML("<h4>Play</h4>"))),
+        uiOutput("menu_text")
     ),
     dashboardBody(
         tags$head(
@@ -27,12 +29,12 @@ shinyUI(dashboardPage(
         tabItems(
             tabItem(tabName = "map",
                     fluidRow(box(plotOutput("map"), width = 12),
-                             uiOutput("image"),
-                             textOutput("month_num"))),
+                             uiOutput("image"))),
             tabItem(tabName = 'hist',
                     fluidRow(box(plotOutput("hist"), width = 12))),
             tabItem(tabName = "data",
-                    fluidRow(box(DT::dataTableOutput("table"), width = 12, title = 'Observations by State,County')))
+                    fluidRow(box(DT::dataTableOutput("county_table"), width = 12, title = 'Observations by County')),
+                    fluidRow(box(DT::dataTableOutput("time_table"), width = 12, title = 'Observations by Time')))
         )
     )
 ))

@@ -18,6 +18,7 @@ peregrine_falcon = NULL
 rt_hummingbird = NULL
 shorteared_owl = NULL
 spotted_sandpiper = NULL
+breed_season = read.csv('./data/breed_season.csv', stringsAsFactors = FALSE)
 
 # make x axis labels, variable for time histogram
 time_seq = c('00:00', '02:00', '04:00', '06:00', '08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00')
@@ -31,13 +32,12 @@ colnames(time_df) = c('time', 'value')
 time_df$time = as.character(time_df$time)
 
 # selectizeInput species selections
-species = c('American Bittern', 'Bald Eagle', 'Belted Kingfisher', 'Blue Jay',
+species_list = c('American Bittern', 'Bald Eagle', 'Belted Kingfisher', 'Blue Jay',
             'Golden Eagle', 'Marsh Wren', 'Peregrine Falcon', 'Ruby-throated Hummingbird',
             'Short-eared Owl', 'Spotted Sandpiper')
-species = species[order(species)]
 
 # function that takes in a dataset and returns observation values grouped by location
-to_mapdata = function(data, choice=1){ # Option to choose return of map.df data (1) or obs data (2)
+to_mapdata = function(data, choice = 1){ # Option to choose return of map.df data (1) or obs data (2)
   
   # data.table use for matching up observations from species datasets (on state,county)
   map.county = data.table(map_data('county')) %>%
@@ -62,12 +62,12 @@ to_mapdata = function(data, choice=1){ # Option to choose return of map.df data 
     return(map.df)
   }
   if(choice == 2){ # return obs data for showing the data table
-    return(obs %>% select(location, observations, `log(observations)` = value))
+    return(select(obs, location, observations, `log(observations)` = value))
   }
 }
 
-# function that taks in a dataset and returns observation values by time observed (e.g. 15:30:00)
-to_histdata = function(data){
+# function that takes in a dataset and returns observation values by time observed (e.g. 15:30:00)
+to_histdata = function(data, choice = 1){
   
   # group by unique times
   temp = data %>%
@@ -81,5 +81,33 @@ to_histdata = function(data){
     select(time, value = value.y) %>%
     mutate(value = ifelse(is.na(value), 0, value))
   
-  return(full_times)
+  if (choice == 1){ # return full_times data for plotting time histogram
+    return(full_times)
+  }
+  if (choice == 2){ # return temp data for showing the data table
+    return(select(temp, time, observations = value))
+  }
+}
+
+# function that takes in a dataset and returns observations with dates within the month range provided
+filter_months = function(data, month_vec){
+  return (filter(data, month(data$date) %in% month_vec[1]:month_vec[2]))
+}
+
+# function that returns month names for printing in graph titles
+title_months = function(month_vec){
+  if (month_vec[1] == month_vec[2]){ # if the endpoints of slider are the same month, return month name with correct grammar for singular month
+    return (paste('in', month.name[month_vec[1]]))
+  }
+  
+  else { # if the endpoints of slider are different months, return month names with correct grammar for multiple months
+    return (paste('between', month.name[month_vec[1]], 'and', month.name[month_vec[2]]))
+  }
+}
+
+# function that returns breeding season month range as a vector given a species name
+breed_range = function(species){
+  month_from = filter(breed_season, common_name == species)$month_from
+  month_to = filter(breed_season, common_name == species)$month_to
+  return (c(month_from, month_to))
 }
