@@ -11,7 +11,7 @@ library(data.table)
 american_bittern = NULL
 bald_eagle = NULL
 belted_kingfisher = NULL
-blue_jay = NULL
+pileated_woodpecker = NULL
 golden_eagle = NULL
 marsh_wren = NULL
 peregrine_falcon = NULL
@@ -32,9 +32,9 @@ colnames(time_df) = c('time', 'value')
 time_df$time = as.character(time_df$time)
 
 # selectizeInput species selections
-species_list = c('American Bittern', 'Bald Eagle', 'Belted Kingfisher', 'Blue Jay',
-            'Golden Eagle', 'Marsh Wren', 'Peregrine Falcon', 'Ruby-throated Hummingbird',
-            'Short-eared Owl', 'Spotted Sandpiper')
+species_list = c('American Bittern', 'Bald Eagle', 'Belted Kingfisher',
+                 'Golden Eagle', 'Marsh Wren', 'Peregrine Falcon', 'Pileated Woodpecker', 'Ruby-throated Hummingbird',
+                 'Short-eared Owl', 'Spotted Sandpiper')
 
 # function that takes in a dataset and returns observation values grouped by location
 to_mapdata = function(data, choice = 1){ # Option to choose return of map.df data (1) or obs data (2)

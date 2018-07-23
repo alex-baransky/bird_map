@@ -23,11 +23,11 @@ shinyServer(function(input, output, session){
         return(belted_kingfisher)
       }
       
-      if(input$species == 'Blue Jay'){
-        if(is.null(blue_jay)){
-          blue_jay = read.csv('./data/blue_jay.csv', stringsAsFactors = FALSE)
+      if(input$species == 'Pileated Woodpecker'){
+        if(is.null(pileated_woodpecker)){
+          pileated_woodpecker = read.csv('./data/pileated_woodpecker.csv', stringsAsFactors = FALSE)
         }
-        return(blue_jay)
+        return(pileated_woodpecker)
       }
       
       if(input$species == 'Golden Eagle'){
@@ -88,8 +88,8 @@ shinyServer(function(input, output, session){
         return('belted_kingfisher.jpg')
       }
       
-      if(input$species == 'Blue Jay'){
-        return('blue_jay.jpg')
+      if(input$species == 'Pileated Woodpecker'){
+        return('pileated_woodpecker.jpg')
       }
       
       if(input$species == 'Golden Eagle'){
