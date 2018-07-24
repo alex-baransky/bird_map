@@ -6,6 +6,8 @@ library(ggplot2)
 library(ggthemes)
 library(lubridate)
 library(data.table)
+library(maps)
+library(mapproj)
 
 # intitialize all species dataset'holders'
 american_bittern = NULL
