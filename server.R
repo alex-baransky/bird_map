@@ -132,6 +132,40 @@ shinyServer(function(input, output, session){
       eBird Basic Dataset. Breeding season range estimates from The Cornell Lab of Ornithology Birds \
       of North America website.<br/>')})
     
+    # The following are used for intro page text display
+    output$intro_header = renderUI({
+      h1('Welcome to my Bird Range Shiny App!')
+    })
+    
+    output$intro_author = renderUI({
+      h4('Coded by: Alex Baransky <alex.baransky@gmail.com>')
+    })
+    
+    output$intro_body1 = renderUI({
+      p('This app uses subsets of the eBird database to produce a density map of bird sightings by county.
+        My aim was to create a tool that could display a visual representation of a species\' range
+        and how it changes over the course of a year, similar to this range map for the Belted Kingfisher:')
+    })
+    
+    output$intro_body2 = renderUI({
+      p('The tabs on the left allow the inspection of different aspects of the data. The "Map" tab shows a 
+        map of the United States with each county colored to its corresponding observation density. The "Time Histogram"
+        tab displays a histogram of sighting frequency by time of day. The "Data Table" tab shows the bird observation data
+        grouped by county and by time.')
+    })
+    
+    output$intro_body3 = renderUI({
+      p('To start, select a species from the dropdown menu. The map may take a few seconds to load. Check the box under species
+        select if you only want to see the range of sightings during that species\' breeding season. Using the slider, you can
+        select a range of months to ivestigate, or you can select a single month by moving both slider endpoints to the same month.
+        You can also press the "play" button under the slider to cycle through the remaining months of the year and get an idea of
+        the change in observation range of the species. Each map will take a few seconds to load.')
+    })
+    
+    output$intro_body4 = renderUI({
+      p('I hope you enjoy using my app!')
+    })
+    
     # render ggplot of observation data
     output$map = renderPlot({
       ggplot(to_mapdata(filter_months(current_data(), input$month)), aes(x=long, y=lat, group=group)) +
@@ -165,7 +199,7 @@ shinyServer(function(input, output, session){
         ggplot(to_histdata(filter_months(current_data(), input$month)), aes(x = time)) +
         geom_histogram(aes(y = value), stat = 'identity') +
         scale_x_discrete(breaks = time_seq, labels = time_seq) + labs(x = 'Time', y = 'Observations') +
-        ggtitle(paste('Optimal Viewing Times for', input$species, title_months(input$month))) +
+        ggtitle(paste('Observation Time Frequency for', input$species, title_months(input$month))) +
         theme_economist()
       )
     })
