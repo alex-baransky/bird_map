@@ -19,7 +19,7 @@ shinyUI(dashboardPage(
                     value = c(1, 12),
                     round = TRUE,
                     sep = '',
-                    animate = animationOptions(interval = 2000,
+                    animate = animationOptions(interval = 3000,
                                                playButton = HTML("<h4>Play</h4>"))),
         uiOutput("menu_text")
     ),
