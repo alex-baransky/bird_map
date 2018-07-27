@@ -6,6 +6,7 @@ shinyUI(dashboardPage(
               menuItem("Introduction", tabName = "intro", icon = icon("info")),
               menuItem("Map", tabName = "map", icon = icon("map")),
               menuItem("Time Histogram", tabName = 'hist', icon = icon("time", lib = 'glyphicon')),
+              menuItem("Monthly Change", tabName = "change", icon = icon("bar-chart-o")),
               menuItem("Data Table", tabName = "data", icon = icon("database"))
         ),
         selectizeInput("species",
@@ -40,6 +41,9 @@ shinyUI(dashboardPage(
                            uiOutput("image"))),
           tabItem(tabName = 'hist',
                   fluidRow(box(plotOutput("hist"), width = 12))),
+          tabItem(tabName = 'change',
+                  fluidRow(box(plotOutput("change"), width = 12)),
+                  fluidRow(htmlOutput('select_state'))),
           tabItem(tabName = "data",
                   fluidRow(box(DT::dataTableOutput("county_table"), width = 12, title = 'Observations by County')),
                   fluidRow(box(DT::dataTableOutput("time_table"), width = 12, title = 'Observations by Time')))

@@ -8,6 +8,7 @@ library(lubridate)
 library(data.table)
 library(maps)
 library(mapproj)
+library(stringi)
 
 # intitialize all species dataset'holders'
 american_bittern = NULL
@@ -112,4 +113,15 @@ breed_range = function(species){
   month_from = filter(breed_season, common_name == species)$month_from
   month_to = filter(breed_season, common_name == species)$month_to
   return (c(month_from, month_to))
+}
+
+# function that returns change in observation grouped by state
+to_statedata = function(data, current_state){
+  state_data = data %>%
+    filter(state == current_state) %>%
+    mutate(month = month(date)) %>%
+    group_by(month) %>%
+    summarise(value = n())
+  
+  return(state_data)
 }

@@ -117,6 +117,17 @@ shinyServer(function(input, output, session){
       }
     })
     
+    # Returns a list of vector of states present in the dataset
+    aval_states = reactive({
+      state_list = current_data() %>%
+        select(state) %>% 
+        unique()
+      
+      state_list = state_list$state
+      
+      return(state_list[order(state_list)])
+    })
+    
     # If breed checkbox is checked, uncheck when selecting a different species
     observeEvent(input$species, {
       if(input$breed){
@@ -150,8 +161,8 @@ shinyServer(function(input, output, session){
     output$intro_body2 = renderUI({
       p('The tabs on the left allow the inspection of different aspects of the data. The "Map" tab shows a 
         map of the United States with each county colored to its corresponding observation density. The "Time Histogram"
-        tab displays a histogram of sighting frequency by time of day. The "Data Table" tab shows the bird observation data
-        grouped by county and by time.')
+        tab displays a histogram of sighting frequency by time of day. The "Monthly Change" tab shows monthly observations of
+        a species by state. The "Data Table" tab shows the bird observation data grouped by county and by time.')
     })
     
     output$intro_body3 = renderUI({
@@ -183,6 +194,11 @@ shinyServer(function(input, output, session){
           style ="display: block; margin-left: auto; margin-right: auto;")
     })
     
+    # adds a select state selectizeinput to change state to inspect
+    output$select_state <- renderUI({
+      selectizeInput("current_state", "Select state to inspect:", aval_states(), selected = aval_states()[1])
+    })
+    
     # show county observations data as table
     output$county_table = DT::renderDataTable({
         datatable(to_mapdata(filter_months(current_data(), input$month), choice=2), rownames=FALSE)
@@ -202,6 +218,14 @@ shinyServer(function(input, output, session){
         ggtitle(paste('Observation Time Frequency for', input$species, title_months(input$month))) +
         theme_economist()
       )
+    })
+    
+    # Plot the observations by month bar graph
+    output$change = renderPlot({
+      ggplot(to_statedata(current_data(), input$current_state), aes(x = month.name[month], y = value)) +
+        geom_bar(stat='identity') + scale_x_discrete(limits = month.name) +
+        labs(x = 'Month', y = 'Observations') + ggtitle(paste('Observations of', input$species, 'by Month in', input$current_state)) +
+        theme_economist()
     })
     
     # If checkbox input is checked, set month range equal to the breeding season estimate for the selected species
